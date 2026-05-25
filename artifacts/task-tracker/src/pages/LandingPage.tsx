@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { 
-  Sparkles, 
-  ArrowRight, 
   CheckCircle2, 
+  ArrowRight, 
   ShieldCheck, 
   TrendingUp, 
   Layout,
@@ -26,7 +25,7 @@ export default function LandingPage() {
       <div className="flex-1 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-          <p className="text-sm text-text-muted font-semibold">Loading Productivity Hub...</p>
+          <p className="text-sm text-text-muted font-semibold">Loading...</p>
         </div>
       </div>
     );
@@ -34,21 +33,16 @@ export default function LandingPage() {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden select-none bg-bg-base bg-grid-pattern">
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 dark:bg-blue-900/20 rounded-full blur-3xl opacity-50 -z-10 animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-200 dark:bg-purple-900/20 rounded-full blur-3xl opacity-50 -z-10 animate-pulse" style={{ animationDelay: "2s" }}></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 dark:bg-blue-900/20 rounded-full blur-3xl opacity-30 -z-10"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-200 dark:bg-purple-900/20 rounded-full blur-3xl opacity-30 -z-10"></div>
 
       <div className="max-w-4xl w-full text-center flex flex-col items-center gap-8 py-12 md:py-24">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-900 shadow-sm animate-bounce">
-          <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">Inspired by Notion + Habitica + TickTick</span>
-        </div>
-
         <div className="flex flex-col gap-4">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-text-base leading-tight">
-            Track weekly habits with <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600">gorgeous pastels</span>
+            Build habits that <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600">actually stick</span>
           </h1>
           <p className="max-w-2xl text-lg md:text-xl text-text-muted font-medium mx-auto">
-            A premium full-stack task tracker that features nested subtasks, visual streaks, strict completion locks, and Github-style heatmaps.
+            A focused weekly habit tracker with nested subtasks, visual streaks, and honest completion locks that keep you accountable.
           </p>
         </div>
 
@@ -85,7 +79,7 @@ export default function LandingPage() {
             </div>
             <h3 className="text-lg font-bold text-text-base">Recursive Subtasks</h3>
             <p className="text-sm text-text-muted font-medium">
-              Break tasks down into infinite subtask layers that automatically roll up parent completion.
+              Break tasks down into subtask layers that automatically roll up parent completion.
             </p>
           </div>
 
@@ -93,9 +87,9 @@ export default function LandingPage() {
             <div className="w-10 h-10 bg-purple-50 dark:bg-purple-950 text-purple-500 rounded-2xl flex items-center justify-center shadow-inner">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-text-base">Strict Completion Lock</h3>
+            <h3 className="text-lg font-bold text-text-base">Honest Streaks</h3>
             <p className="text-sm text-text-muted font-medium">
-              Daily tasks lock once the day passes, building discipline and honest, un-cheatable streaks.
+              Daily tasks lock once the day passes, building discipline and un-cheatable streaks.
             </p>
           </div>
         </div>

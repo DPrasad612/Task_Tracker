@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import { Sparkles, ArrowLeft, LogIn } from "lucide-react";
+import { Sparkles, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 
 export default function LoginPage() {
   const { user, login, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -20,17 +24,32 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const errors: { email?: string; password?: string } = {};
+    if (!email.trim()) {
+      errors.email = "Email address is required";
+    } else if (!EMAIL_REGEX.test(email.trim())) {
+      errors.email = "Please enter a valid email address";
+    }
+    if (!password) {
+      errors.password = "Password is required";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setSubmitting(true);
-    const result = await login(email, password);
+    const result = await login(email.trim().toLowerCase(), password);
     setSubmitting(false);
     if (!result.success) {
-      setError(result.error || "Failed to log in");
+      setError(result.error || "Invalid email or password");
     }
   };
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center min-h-screen p-6 relative select-none bg-bg-base bg-grid-pattern">
-      <div className="absolute top-10 right-10 w-72 h-72 bg-[var(--color-pastel-pink)] dark:bg-[var(--color-pastel-pink)]/10 rounded-full blur-3xl opacity-40 -z-10"></div>
+      <div className="absolute top-10 right-10 w-72 h-72 bg-[var(--color-pastel-pink)] dark:bg-[var(--color-pastel-pink)]/10 rounded-full blur-3xl opacity-30 -z-10"></div>
 
       <div className="w-full max-w-md">
         <Link
@@ -57,31 +76,43 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-xs font-bold text-text-muted uppercase">Email Address</label>
               <input
                 type="email"
                 id="email"
-                required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: undefined })); }}
                 placeholder="you@example.com"
-                className="px-4 py-3 bg-bg-muted border border-border-base rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-btn-primary transition-all duration-150 text-text-base"
+                autoComplete="email"
+                className={`px-4 py-3 bg-bg-muted border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-btn-primary transition-all duration-150 text-text-base ${fieldErrors.email ? "border-red-400 dark:border-red-700" : "border-border-base"}`}
               />
+              {fieldErrors.email && <p className="text-xs text-red-500 font-semibold mt-0.5">{fieldErrors.email}</p>}
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="password" className="text-xs font-bold text-text-muted uppercase">Password</label>
-              <input
-                type="password"
-                id="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="px-4 py-3 bg-bg-muted border border-border-base rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-btn-primary transition-all duration-150 text-text-base"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })); }}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className={`w-full px-4 py-3 pr-12 bg-bg-muted border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-btn-primary transition-all duration-150 text-text-base ${fieldErrors.password ? "border-red-400 dark:border-red-700" : "border-border-base"}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-base transition-colors cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {fieldErrors.password && <p className="text-xs text-red-500 font-semibold mt-0.5">{fieldErrors.password}</p>}
             </div>
 
             <button

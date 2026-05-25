@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
   ListTodo, 
@@ -14,6 +15,7 @@ import {
 export default function Navigation() {
   const [pathname] = useLocation();
   const { user, logout, updateTheme } = useAuth();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   if (!user) return null;
 
@@ -21,6 +23,11 @@ export default function Navigation() {
 
   const toggleTheme = () => {
     updateTheme(currentTheme === "light" ? "dark" : "light");
+  };
+
+  const handleLogout = () => {
+    setIsLogoutModalOpen(false);
+    logout();
   };
 
   const navItems = [
@@ -39,7 +46,7 @@ export default function Navigation() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-text-base">Task Tracker</h1>
-              <p className="text-xs text-text-muted font-medium">Productivity Hub</p>
+              <p className="text-xs text-text-muted font-medium">Weekly Habits</p>
             </div>
           </div>
 
@@ -86,7 +93,7 @@ export default function Navigation() {
             </button>
 
             <button
-              onClick={logout}
+              onClick={() => setIsLogoutModalOpen(true)}
               className="flex-1 flex items-center justify-center py-2.5 rounded-xl border border-red-200 dark:border-red-950 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-200 cursor-pointer"
               title="Logout"
             >
@@ -124,13 +131,59 @@ export default function Navigation() {
         </button>
 
         <button
-          onClick={logout}
+          onClick={() => setIsLogoutModalOpen(true)}
           className="flex flex-col items-center gap-1 py-1 px-4 text-red-500 cursor-pointer"
         >
           <LogOut className="w-5 h-5" />
           <span className="text-[10px] tracking-wide">Logout</span>
         </button>
       </nav>
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {isLogoutModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+            onClick={(e) => e.target === e.currentTarget && setIsLogoutModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-bg-card border border-border-base rounded-3xl p-8 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-950 flex items-center justify-center">
+                  <LogOut className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-text-base">Log out?</h3>
+                  <p className="text-sm text-text-muted mt-1">
+                    Are you sure you want to log out? Your progress is saved automatically.
+                  </p>
+                </div>
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={() => setIsLogoutModalOpen(false)}
+                    className="flex-1 py-2.5 border border-border-base rounded-xl text-sm font-bold text-text-muted hover:bg-bg-muted cursor-pointer transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 cursor-pointer transition-colors"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

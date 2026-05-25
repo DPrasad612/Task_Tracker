@@ -1,0 +1,294 @@
+Modify and improve the EXISTING implementation only.
+
+STRICT RULES:
+
+* Do NOT rebuild the application from scratch.
+* Do NOT migrate frameworks.
+* Do NOT replace the current architecture.
+* Preserve the existing:
+
+  * backend APIs
+  * authentication flow
+  * database structure
+  * styling system
+  * routing structure
+  * pastel premium aesthetic
+* Only improve, stabilize, and extend the current implementation.
+
+==================================================
+CORE PRODUCT GOAL
+=================
+
+Transform the current tracker into a polished, production-like responsive SaaS application with:
+
+* stable onboarding
+* clean UX
+* responsive layouts
+* polished task management
+* reliable authentication
+* smooth state handling
+* proper empty-state flows
+* functional delete/reset systems
+
+==================================================
+BRANDING & UI CLEANUP
+=====================
+
+1. Completely remove all remaining template/inspiration references such as:
+
+   * “Inspired by Habitica”
+   * “Inspired by Notion”
+   * “Inspired by TickTick”
+   * floating badges
+   * floating labels
+   * template-generated references
+
+2. Remove unnecessary floating/jumping animations and layout shifts.
+
+3. Keep the interface:
+
+   * minimal
+   * premium
+   * clean
+   * product-focused
+
+4. Preserve the existing pastel SaaS design language.
+
+==================================================
+ONBOARDING EXPERIENCE
+=====================
+
+5. New users must start with ZERO default tasks.
+
+6. Remove all automatic demo/sample task creation during signup.
+
+7. Show a polished empty-state UI when no tasks exist.
+
+8. Empty-state must include:
+
+   * “No tasks yet”
+   * “Create your first task”
+   * “Load Sample Tasks”
+
+9. Improve the onboarding experience with:
+
+   * smooth transitions
+   * polished spacing
+   * responsive layout
+   * lightweight animations
+
+10. Ensure onboarding works correctly across:
+
+* desktop
+* laptop
+* tablet
+* mobile
+
+==================================================
+SAMPLE TASK MANAGEMENT
+======================
+
+11. “Load Sample Tasks” must create demo/sample tasks only when explicitly clicked.
+
+12. Clearly distinguish:
+
+* sample/demo tasks
+* real user-created tasks
+
+13. Add:
+
+* “Clear Sample Tasks”
+  OR
+* “Reset Tasks”
+
+14. Clearing sample tasks must:
+
+* remove all sample/demo tasks
+* restore original empty onboarding state
+* preserve real user-created tasks whenever possible
+
+15. Ensure transitions between:
+
+* empty state
+* sample state
+* user-created state
+  are smooth and correctly synchronized.
+
+==================================================
+DELETE ALL TASKS SYSTEM
+=======================
+
+16. Fully fix and complete the “Delete All” functionality.
+
+17. Add a proper confirmation modal before deletion.
+
+18. On confirmation:
+
+* delete all tasks belonging ONLY to the currently logged-in user
+* delete nested subtasks
+* delete completion/progress records
+* delete analytics-related task records if required
+
+19. Immediately update:
+
+* tracker UI
+* task lists
+* progress indicators
+* analytics/dashboard
+* empty-state onboarding
+
+20. After deletion:
+
+* restore the onboarding empty-state experience
+* show:
+
+  * “No tasks yet”
+  * “Create your first task”
+  * “Load Sample Tasks”
+
+21. Prevent:
+
+* accidental multiple clicks
+* duplicate deletion requests
+* stale UI state
+
+22. Add:
+
+* loading states
+* success states
+* proper error handling
+
+==================================================
+TASK MANAGEMENT & UX
+====================
+
+23. Implement drag-and-drop task reordering.
+
+24. Users must be able to:
+
+* reorder tasks naturally
+* persist custom order after refresh/login
+
+25. Preserve subtask hierarchy correctly during reordering.
+
+26. Improve:
+
+* task spacing
+* alignment
+* typography
+* responsiveness
+* completion animations
+
+27. Add smoother task completion interactions while keeping performance lightweight.
+
+28. Prevent unnecessary rerenders and layout jumps.
+
+==================================================
+RESPONSIVENESS
+==============
+
+29. Fully optimize the application for:
+
+* desktop/laptop
+* tablet
+* mobile phones
+
+30. Ensure:
+
+* no broken layouts
+* no horizontal overflow
+* tracker grid remains usable on small screens
+* responsive typography scaling
+* proper spacing consistency
+
+31. Keep a SINGLE responsive application.
+    Do NOT create a separate mobile app.
+
+==================================================
+AUTHENTICATION & VALIDATION
+===========================
+
+32. Improve signup/login validation flow.
+
+33. Add stronger email validation.
+
+34. Prevent:
+
+* malformed email addresses
+* invalid email formats
+* duplicate account creation
+
+35. Show clear user-friendly validation messages.
+
+36. Improve:
+
+* signup error handling
+* login error handling
+* session stability
+* auth persistence across devices
+
+37. Keep current authentication architecture intact.
+
+38. Preserve existing database schema unless absolutely minimal changes are required.
+
+39. Prepare the auth structure so email verification can be added later easily.
+
+40. Do NOT implement full email verification yet.
+
+==================================================
+LOGOUT UX IMPROVEMENT
+=====================
+
+41. Improve the logout experience.
+
+42. When the user clicks “Logout”, show a confirmation modal/dialog:
+
+* “Are you sure you want to log out?”
+
+43. Add:
+
+* Cancel button
+* Confirm Logout button
+
+44. Prevent accidental logout actions.
+
+45. Keep the modal design consistent with the pastel premium UI.
+
+46. Ensure logout works correctly across:
+
+* desktop
+* tablet
+* mobile
+
+==================================================
+PERFORMANCE & STABILITY
+=======================
+
+47. Keep the implementation lightweight and performant.
+
+48. Avoid:
+
+* unnecessary rerenders
+* excessive animations
+* large refactors
+* framework migrations
+
+49. Preserve current functionality while improving UX and stability.
+
+50. Ensure all new changes work correctly together without breaking:
+
+* authentication
+* tracker state
+* analytics
+* responsiveness
+* onboarding flows
+* task persistence
+
+==================================================
+FINAL REQUIREMENT
+=================
+
+This should feel like a polished production-ready SaaS tracker application rather than a template-generated demo project.
+
+Only improve and refine the existing implementation.
+Do NOT rebuild the project from scratch.

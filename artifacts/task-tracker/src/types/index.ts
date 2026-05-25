@@ -24,6 +24,7 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   order: number;
   parentId: string | null;
+  isSample: boolean;
   createdAt: Date;
 }
 

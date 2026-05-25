@@ -94,6 +94,7 @@ router.post("/tasks", async (req, res): Promise<void> => {
       icon: icon || "Check",
       priority: priority || "medium",
       parentId: parentId || null,
+      isSample: false,
       order: existingTasks.length,
     }).returning();
 
@@ -133,6 +134,7 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
         color: color !== undefined ? color : existing.color,
         icon: icon !== undefined ? icon : existing.icon,
         priority: priority !== undefined ? priority : existing.priority,
+        isSample: false,
       })
       .where(eq(tasksTable.id, rawId))
       .returning();
@@ -141,6 +143,56 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error }, "PUT task error");
     res.status(500).json({ error: "Internal server error updating task" });
+  }
+});
+
+router.delete("/tasks/all", async (req, res): Promise<void> => {
+  try {
+    const user = await getSessionUser(req);
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated" });
+      return;
+    }
+
+    const allTasks = await db
+      .select()
+      .from(tasksTable)
+      .where(eq(tasksTable.userId, user.id));
+
+    for (const task of allTasks) {
+      await db.delete(progressLogsTable).where(eq(progressLogsTable.taskId, task.id));
+    }
+    await db.delete(tasksTable).where(eq(tasksTable.userId, user.id));
+
+    res.json({ success: true, message: "All tasks deleted" });
+  } catch (error) {
+    req.log.error({ error }, "Delete all tasks error");
+    res.status(500).json({ error: "Internal server error deleting all tasks" });
+  }
+});
+
+router.delete("/tasks/sample", async (req, res): Promise<void> => {
+  try {
+    const user = await getSessionUser(req);
+    if (!user) {
+      res.status(401).json({ error: "Not authenticated" });
+      return;
+    }
+
+    const sampleTasks = await db
+      .select()
+      .from(tasksTable)
+      .where(and(eq(tasksTable.userId, user.id), eq(tasksTable.isSample, true)));
+
+    for (const task of sampleTasks) {
+      await db.delete(progressLogsTable).where(eq(progressLogsTable.taskId, task.id));
+    }
+    await db.delete(tasksTable).where(and(eq(tasksTable.userId, user.id), eq(tasksTable.isSample, true)));
+
+    res.json({ success: true, message: "Sample tasks cleared" });
+  } catch (error) {
+    req.log.error({ error }, "Delete sample tasks error");
+    res.status(500).json({ error: "Internal server error clearing sample tasks" });
   }
 });
 
@@ -164,7 +216,6 @@ router.delete("/tasks/:id", async (req, res): Promise<void> => {
       return;
     }
 
-    // Recursively delete subtasks
     async function deleteTaskRecursive(taskId: string) {
       const subtasks = await db
         .select()
@@ -217,31 +268,6 @@ router.post("/tasks/reorder", async (req, res): Promise<void> => {
   }
 });
 
-router.delete("/tasks/all", async (req, res): Promise<void> => {
-  try {
-    const user = await getSessionUser(req);
-    if (!user) {
-      res.status(401).json({ error: "Not authenticated" });
-      return;
-    }
-
-    const allTasks = await db
-      .select()
-      .from(tasksTable)
-      .where(eq(tasksTable.userId, user.id));
-
-    for (const task of allTasks) {
-      await db.delete(progressLogsTable).where(eq(progressLogsTable.taskId, task.id));
-    }
-    await db.delete(tasksTable).where(eq(tasksTable.userId, user.id));
-
-    res.json({ success: true, message: "All tasks deleted" });
-  } catch (error) {
-    req.log.error({ error }, "Delete all tasks error");
-    res.status(500).json({ error: "Internal server error deleting all tasks" });
-  }
-});
-
 router.post("/tasks/seed", async (req, res): Promise<void> => {
   try {
     const user = await getSessionUser(req);
@@ -251,22 +277,22 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
     }
 
     const today = new Date();
-    const formatDate = (d: Date) => {
+    const fmt = (d: Date) => {
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}`;
     };
-    const todayStr = formatDate(today);
-    const yesterday = formatDate(new Date(Date.now() - 86400000));
-    const twoDaysAgo = formatDate(new Date(Date.now() - 172800000));
+    const todayStr = fmt(today);
+    const yesterday = fmt(new Date(Date.now() - 86400000));
+    const twoDaysAgo = fmt(new Date(Date.now() - 172800000));
 
-    const existingCount = await db
+    const existingTasks = await db
       .select()
       .from(tasksTable)
       .where(eq(tasksTable.userId, user.id));
 
-    const offset = existingCount.length;
+    const offset = existingTasks.length;
 
     const seedTasks = [
       { name: "Wake Up On Time", category: "General", color: "#3B82F6", priority: "high" as const, order: offset + 0 },
@@ -283,6 +309,7 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
         color: t.color,
         priority: t.priority,
         order: t.order,
+        isSample: true,
       }).returning();
 
       if (t.name === "Wake Up On Time" || t.name === "Drink Water") {
@@ -301,6 +328,7 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
       color: "#8B5CF6",
       priority: "high",
       order: offset + 4,
+      isSample: true,
     }).returning();
 
     const subtaskNames = ["Arrays", "Linked Lists", "Trees"];
@@ -313,6 +341,7 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
         priority: "high",
         parentId: parentTask.id,
         order: i,
+        isSample: true,
       }).returning();
 
       if (subtaskNames[i] === "Arrays") {

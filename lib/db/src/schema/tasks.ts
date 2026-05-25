@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { usersTable } from "./users";
@@ -13,6 +13,7 @@ export const tasksTable = pgTable("tasks", {
   priority: text("priority").notNull().default("medium"),
   order: integer("order").notNull().default(0),
   parentId: uuid("parent_id"),
+  isSample: boolean("is_sample").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

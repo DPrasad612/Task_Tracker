@@ -45,7 +45,9 @@ export default function TrackerPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTaskForEdit, setActiveTaskForEdit] = useState<TaskWithDetails | null>(null);
   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [isDeleteAllLoading, setIsDeleteAllLoading] = useState(false);
   const [isSeedingTasks, setIsSeedingTasks] = useState(false);
+  const [isClearingSampleTasks, setIsClearingSampleTasks] = useState(false);
 
   const [taskName, setTaskName] = useState("");
   const [taskCategory, setTaskCategory] = useState("General");
@@ -306,6 +308,8 @@ export default function TrackerPage() {
   };
 
   const handleDeleteAllTasks = async () => {
+    if (isDeleteAllLoading) return;
+    setIsDeleteAllLoading(true);
     try {
       const res = await fetch("/api/tasks/all", { method: "DELETE", credentials: "include" });
       if (res.ok) {
@@ -317,10 +321,35 @@ export default function TrackerPage() {
       }
     } catch {
       showToast("Error deleting tasks", "error");
+    } finally {
+      setIsDeleteAllLoading(false);
+    }
+  };
+
+  const handleClearSampleTasks = async () => {
+    if (isClearingSampleTasks) return;
+    setIsClearingSampleTasks(true);
+    try {
+      const res = await fetch("/api/tasks/sample", { method: "DELETE", credentials: "include" });
+      if (res.ok) {
+        setTasks((prev) => {
+          const removeSample = (list: TaskWithDetails[]): TaskWithDetails[] =>
+            list.filter((t) => !t.isSample).map((t) => ({ ...t, subtasks: removeSample(t.subtasks) }));
+          return removeSample(prev);
+        });
+        showToast("Sample tasks cleared", "success");
+      } else {
+        showToast("Failed to clear sample tasks", "error");
+      }
+    } catch {
+      showToast("Error clearing sample tasks", "error");
+    } finally {
+      setIsClearingSampleTasks(false);
     }
   };
 
   const handleLoadSampleTasks = async () => {
+    if (isSeedingTasks) return;
     setIsSeedingTasks(true);
     try {
       const res = await fetch("/api/tasks/seed", { method: "POST", credentials: "include" });
@@ -534,6 +563,10 @@ export default function TrackerPage() {
 
   const filteredTasks = filterTaskTree(tasks);
 
+  const hasSampleTasks = tasks.some(function checkSample(t: TaskWithDetails): boolean {
+    return t.isSample || t.subtasks.some(checkSample);
+  });
+
   const renderTaskRows = (task: TaskWithDetails, depth: number = 0, indexStr: string = "") => {
     const weekDates = getWeekDates(pivotDate);
     const { progressPercent, streak } = calculateRowDetails(task);
@@ -572,6 +605,11 @@ export default function TrackerPage() {
                   <span className="font-bold tracking-tight truncate text-text-base cursor-pointer hover:underline" onClick={() => triggerEditModal(task)}>
                     {task.name}
                   </span>
+                  {task.isSample && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/30 text-violet-500 dark:text-violet-400 border border-violet-200 dark:border-violet-800 flex-shrink-0">
+                      sample
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-bg-muted text-text-muted border border-border-base">{task.category}</span>
@@ -746,6 +784,17 @@ export default function TrackerPage() {
             <FileSpreadsheet className="w-4 h-4" />
             <span className="hidden sm:inline">Export CSV</span>
           </button>
+
+          {hasSampleTasks && (
+            <button
+              onClick={handleClearSampleTasks}
+              disabled={isClearingSampleTasks}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold border border-violet-200 dark:border-violet-800 text-violet-500 bg-bg-muted rounded-xl hover:bg-violet-50 dark:hover:bg-violet-950/20 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <X className="w-4 h-4" />
+              <span className="hidden sm:inline">{isClearingSampleTasks ? "Clearing..." : "Clear Samples"}</span>
+            </button>
+          )}
 
           {tasks.length > 0 && (
             <button
@@ -1002,9 +1051,15 @@ export default function TrackerPage() {
                   </button>
                   <button
                     onClick={handleDeleteAllTasks}
-                    className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 cursor-pointer transition-colors"
+                    disabled={isDeleteAllLoading}
+                    className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 cursor-pointer transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    Delete All
+                    {isDeleteAllLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : "Delete All"}
                   </button>
                 </div>
               </div>
