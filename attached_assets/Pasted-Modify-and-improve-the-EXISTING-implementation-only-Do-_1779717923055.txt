@@ -1,0 +1,342 @@
+Modify and improve the EXISTING implementation only.
+Do NOT rebuild the application from scratch.
+Do NOT migrate frameworks.
+Preserve the current architecture, APIs, authentication flow, database structure, styling system, responsiveness foundation, and overall UI direction.
+
+Implement a complete dynamic date-driven task lifecycle system and advanced tracker behavior improvements.
+
+====================================================
+CORE TASK DATE SYSTEM
+=====================
+
+Replace the current strictly weekly-task behavior with a fully dynamic date-based tracking system.
+
+Tasks should no longer depend on a fixed weekly structure.
+
+Every task must operate using:
+
+* start date
+* optional end date
+* lifecycle state
+* optional scheduled time
+
+====================================================
+TASK CREATION FLOW
+==================
+
+When creating a task:
+
+Required fields:
+
+* task title
+* category
+* priority
+* start date
+
+Optional fields:
+
+* end date
+* subtasks
+* time scheduling
+
+Add a toggle:
+“Enable time-based task”
+
+If enabled:
+
+* allow specifying:
+
+  * task time
+  * optional note/reminder text
+* show the scheduled time below the task title in the tracker UI
+
+====================================================
+UPCOMING TASK SYSTEM
+====================
+
+If:
+current date < task start date
+
+Then:
+
+* the task must appear inside a separate:
+  “Upcoming Tasks” section
+
+Requirements:
+
+* upcoming tasks must NOT appear inside the active tracker
+* preserve user-defined ordering
+* visually separate upcoming tasks cleanly
+* maintain existing pastel SaaS styling
+
+Upcoming tasks should display:
+
+* title
+* start date
+* optional end date
+* optional scheduled time
+
+====================================================
+AUTOMATIC TASK ACTIVATION
+=========================
+
+When:
+current date >= task start date
+
+Then:
+
+* automatically move the task into the active tracker
+* no manual refresh
+* no reload button
+* no user action required
+
+Requirements:
+
+* use reactive date-based filtering
+* preserve:
+
+  * ordering
+  * subtasks
+  * completion state
+  * analytics state
+* avoid unnecessary rerenders
+
+====================================================
+ACTIVE TASK RULES
+=================
+
+Only active tasks should appear in the main tracker.
+
+A task becomes ACTIVE when:
+current date >= start date
+
+A task remains active while:
+current date <= end date
+OR
+the task still exists inside the currently visible tracker timeline range
+
+Requirements:
+
+* active tasks always appear before upcoming tasks
+* preserve custom ordering
+* maintain lightweight rendering
+
+====================================================
+EXPIRED TASK BEHAVIOR
+=====================
+
+DO NOT instantly remove tasks from the tracker once the end date passes.
+
+Instead:
+
+If:
+current date > end date
+
+Then:
+
+* make the task read-only
+* disable future interaction
+* stop affecting:
+
+  * streaks
+  * active analytics
+  * progress metrics
+  * dashboard calculations
+
+However:
+
+* keep the task visible until it naturally moves outside the currently displayed tracker timeline/date range
+* preserve visual continuity for recently completed/expired tasks
+
+Once the task is outside the visible active timeline:
+
+* automatically archive or hide it
+
+====================================================
+TRACKER GRID RENDERING
+======================
+
+For all date-based tasks:
+
+DO NOT render locked circles before the task start date.
+
+BAD:
+🔒 🔒 🔒 ○ ○ ○
+
+GOOD:
+○ ○ ○
+
+Requirements:
+
+* hide all pre-start-date cells completely
+* only render completion circles during the valid active range
+* preserve clean spacing and alignment
+* avoid visual clutter
+
+For expired dates:
+
+* fade or disable cells
+* prevent interaction
+
+====================================================
+DYNAMIC DATE TRACKER
+====================
+
+Replace rigid weekly-only behavior with dynamic date continuation.
+
+Requirements:
+
+* tracker timeline should continue naturally across dates
+* support tasks spanning:
+
+  * days
+  * weeks
+  * months
+
+Tasks should visually continue only across their valid date range.
+
+====================================================
+TASK GROUPING RULES
+===================
+
+Task order should always be:
+
+1. Active Tasks
+2. Upcoming Tasks
+3. Expired/Archived Tasks (hidden from active tracker)
+
+Requirements:
+
+* active tasks must always appear first
+* upcoming tasks grouped separately
+* expired tasks must never interfere with active tracking UX
+
+====================================================
+SUBTASK SYSTEM
+==============
+
+Preserve the existing subtask architecture.
+
+Requirements:
+
+* subtasks inherit lifecycle behavior from parent task
+* subtasks only appear when parent becomes active
+* preserve:
+
+  * numbering
+  * nested structure
+  * independent completion
+
+====================================================
+EMPTY STATE UX
+==============
+
+Preserve the improved onboarding flow.
+
+Requirements:
+
+* new users start with zero tasks
+* preserve:
+
+  * “No tasks yet”
+  * “Create your first task”
+  * “Load Sample Tasks”
+
+Add smoother transitions between:
+
+* empty state
+* populated tracker state
+
+====================================================
+RESPONSIVENESS
+==============
+
+Fully optimize for:
+
+* desktop/laptop
+* tablet
+* mobile
+
+Requirements:
+
+* responsive typography
+* responsive spacing
+* responsive tracker grid
+* prevent overflow
+* prevent broken layouts
+* preserve touch usability
+
+====================================================
+TASK ORDERING
+=============
+
+Allow users to customize task ordering.
+
+Preferred:
+
+* drag-and-drop ordering
+
+Fallback:
+
+* move up/down controls
+
+Requirements:
+
+* preserve ordering across reloads
+* preserve ordering across lifecycle transitions
+
+====================================================
+UI / DESIGN RULES
+=================
+
+Preserve:
+
+* pastel premium SaaS aesthetic
+* modern spacing
+* soft shadows
+* clean typography
+
+Remove:
+
+* unnecessary template references
+* floating badges
+* distracting animations
+* layout jumps
+
+Avoid:
+
+* bouncing effects
+* excessive animations
+* unstable rendering
+
+====================================================
+PERFORMANCE
+===========
+
+Keep implementation lightweight.
+
+Requirements:
+
+* avoid unnecessary rerenders
+* avoid full page reloads
+* avoid architecture rewrites
+* preserve existing APIs wherever possible
+
+====================================================
+IMPORTANT IMPLEMENTATION RULES
+==============================
+
+Do NOT:
+
+* rebuild the project
+* rewrite the architecture
+* migrate frameworks
+* replace backend technologies
+
+ONLY:
+
+* extend
+* refine
+* stabilize
+* improve
+  the current implementation cleanly.

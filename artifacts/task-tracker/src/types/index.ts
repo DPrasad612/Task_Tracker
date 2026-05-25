@@ -25,6 +25,10 @@ export interface Task {
   order: number;
   parentId: string | null;
   isSample: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  scheduledTime: string | null;
+  scheduledNote: string | null;
   createdAt: Date;
 }
 

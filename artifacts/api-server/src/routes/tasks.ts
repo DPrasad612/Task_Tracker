@@ -69,7 +69,7 @@ router.post("/tasks", async (req, res): Promise<void> => {
       return;
     }
 
-    const { name, category, color, icon, priority, parentId } = req.body;
+    const { name, category, color, icon, priority, parentId, startDate, endDate, scheduledTime, scheduledNote } = req.body;
 
     if (!name) {
       res.status(400).json({ error: "Task name is required" });
@@ -96,6 +96,10 @@ router.post("/tasks", async (req, res): Promise<void> => {
       parentId: parentId || null,
       isSample: false,
       order: existingTasks.length,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      scheduledTime: scheduledTime || null,
+      scheduledNote: scheduledNote || null,
     }).returning();
 
     res.json({ task: { ...task, subtasks: [], progressLogs: [] } });
@@ -114,7 +118,7 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
     }
 
     const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const { name, category, color, icon, priority } = req.body;
+    const { name, category, color, icon, priority, startDate, endDate, scheduledTime, scheduledNote } = req.body;
 
     const [existing] = await db
       .select()
@@ -134,6 +138,10 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
         color: color !== undefined ? color : existing.color,
         icon: icon !== undefined ? icon : existing.icon,
         priority: priority !== undefined ? priority : existing.priority,
+        startDate: startDate !== undefined ? (startDate || null) : existing.startDate,
+        endDate: endDate !== undefined ? (endDate || null) : existing.endDate,
+        scheduledTime: scheduledTime !== undefined ? (scheduledTime || null) : existing.scheduledTime,
+        scheduledNote: scheduledNote !== undefined ? (scheduledNote || null) : existing.scheduledNote,
         isSample: false,
       })
       .where(eq(tasksTable.id, rawId))
@@ -276,16 +284,24 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
       return;
     }
 
-    const today = new Date();
     const fmt = (d: Date) => {
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}`;
     };
-    const todayStr = fmt(today);
-    const yesterday = fmt(new Date(Date.now() - 86400000));
-    const twoDaysAgo = fmt(new Date(Date.now() - 172800000));
+
+    const now = Date.now();
+    const today = fmt(new Date());
+    const yesterday = fmt(new Date(now - 86400000));
+    const twoDaysAgo = fmt(new Date(now - 172800000));
+    const threeDaysAgo = fmt(new Date(now - 259200000));
+    const in3Days = fmt(new Date(now + 259200000));
+    const in14Days = fmt(new Date(now + 1209600000));
+    const in30Days = fmt(new Date(now + 2592000000));
+    const ago7 = fmt(new Date(now - 604800000));
+    const ago5 = fmt(new Date(now - 432000000));
+    const ago2 = fmt(new Date(now - 172800000));
 
     const existingTasks = await db
       .select()
@@ -295,10 +311,50 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
     const offset = existingTasks.length;
 
     const seedTasks = [
-      { name: "Wake Up On Time", category: "General", color: "#3B82F6", priority: "high" as const, order: offset + 0 },
-      { name: "Drink Water", category: "Health", color: "#10B981", priority: "medium" as const, order: offset + 1 },
-      { name: "Deep Work (1 Hr)", category: "Work", color: "#F59E0B", priority: "high" as const, order: offset + 2 },
-      { name: "Read 10 Minutes", category: "Personal", color: "#EC4899", priority: "low" as const, order: offset + 3 },
+      {
+        name: "Wake Up On Time",
+        category: "General",
+        color: "#3B82F6",
+        priority: "high" as const,
+        order: offset + 0,
+        startDate: ago7,
+        endDate: in30Days,
+        scheduledTime: "07:00",
+        scheduledNote: "No snooze allowed",
+      },
+      {
+        name: "Drink Water (8 Glasses)",
+        category: "Health",
+        color: "#10B981",
+        priority: "medium" as const,
+        order: offset + 1,
+        startDate: ago5,
+        endDate: null,
+        scheduledTime: null,
+        scheduledNote: null,
+      },
+      {
+        name: "Deep Work Session",
+        category: "Work",
+        color: "#F59E0B",
+        priority: "high" as const,
+        order: offset + 2,
+        startDate: today,
+        endDate: in14Days,
+        scheduledTime: "09:00",
+        scheduledNote: "No distractions — phone away",
+      },
+      {
+        name: "Read 10 Minutes",
+        category: "Personal",
+        color: "#EC4899",
+        priority: "low" as const,
+        order: offset + 3,
+        startDate: in3Days,
+        endDate: in30Days,
+        scheduledTime: "21:00",
+        scheduledNote: "Before bed reading habit",
+      },
     ];
 
     for (const t of seedTasks) {
@@ -310,13 +366,27 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
         priority: t.priority,
         order: t.order,
         isSample: true,
+        startDate: t.startDate,
+        endDate: t.endDate,
+        scheduledTime: t.scheduledTime,
+        scheduledNote: t.scheduledNote,
       }).returning();
 
-      if (t.name === "Wake Up On Time" || t.name === "Drink Water") {
+      if (t.name === "Wake Up On Time") {
+        await db.insert(progressLogsTable).values([
+          { userId: user.id, taskId: createdTask.id, date: threeDaysAgo, completed: true },
+          { userId: user.id, taskId: createdTask.id, date: twoDaysAgo, completed: true },
+          { userId: user.id, taskId: createdTask.id, date: yesterday, completed: true },
+          { userId: user.id, taskId: createdTask.id, date: today, completed: true },
+        ]);
+      } else if (t.name === "Drink Water (8 Glasses)") {
         await db.insert(progressLogsTable).values([
           { userId: user.id, taskId: createdTask.id, date: twoDaysAgo, completed: true },
           { userId: user.id, taskId: createdTask.id, date: yesterday, completed: true },
-          { userId: user.id, taskId: createdTask.id, date: todayStr, completed: true },
+        ]);
+      } else if (t.name === "Deep Work Session") {
+        await db.insert(progressLogsTable).values([
+          { userId: user.id, taskId: createdTask.id, date: today, completed: false },
         ]);
       }
     }
@@ -329,9 +399,13 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
       priority: "high",
       order: offset + 4,
       isSample: true,
+      startDate: ago2,
+      endDate: in14Days,
+      scheduledTime: "19:00",
+      scheduledNote: "Complete 2 Leetcode problems",
     }).returning();
 
-    const subtaskNames = ["Arrays", "Linked Lists", "Trees"];
+    const subtaskNames = ["Arrays & Hashing", "Linked Lists", "Binary Trees"];
     for (let i = 0; i < subtaskNames.length; i++) {
       const [sub] = await db.insert(tasksTable).values({
         userId: user.id,
@@ -344,10 +418,10 @@ router.post("/tasks/seed", async (req, res): Promise<void> => {
         isSample: true,
       }).returning();
 
-      if (subtaskNames[i] === "Arrays") {
+      if (subtaskNames[i] === "Arrays & Hashing") {
         await db.insert(progressLogsTable).values([
           { userId: user.id, taskId: sub.id, date: yesterday, completed: true },
-          { userId: user.id, taskId: sub.id, date: todayStr, completed: true },
+          { userId: user.id, taskId: sub.id, date: today, completed: true },
         ]);
       } else if (subtaskNames[i] === "Linked Lists") {
         await db.insert(progressLogsTable).values([

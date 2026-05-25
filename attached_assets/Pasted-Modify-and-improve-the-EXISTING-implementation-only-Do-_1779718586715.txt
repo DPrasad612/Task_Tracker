@@ -1,0 +1,370 @@
+Modify and improve the EXISTING implementation only.
+Do NOT rebuild the application from scratch.
+Do NOT migrate frameworks.
+Preserve the current architecture, APIs, authentication flow, database structure, styling system, and overall UI direction.
+
+Implement a full dynamic date-based task lifecycle system with onboarding, scheduling, responsiveness, and tracker improvements.
+
+Replace the current strictly weekly-task behavior with a fully dynamic date-driven tracking system.
+
+Tasks should no longer exist only inside a fixed weekly structure.
+
+Instead:
+
+* every task should operate based on:
+
+  * start date
+  * optional end date
+  * active lifecycle state
+
+When creating a new task:
+
+1. Ask for:
+
+   * task title
+   * category
+   * priority
+   * optional subtasks
+
+2. Add:
+
+   * Start Date (required)
+   * End Date (optional but recommended)
+
+3. Add a toggle:
+   “Enable time-based task”
+
+4. If enabled:
+
+   * IMMEDIATELY require the user to specify:
+
+     * task time
+     * optional short note/reminder text
+
+   * the time input must support:
+
+     * hour/minute selection
+     * AM/PM or 24-hour format
+     * mobile-friendly selection UI
+
+   * display the selected time and optional reminder text directly below the task title in the tracker UI
+
+Example:
+
+DSA Practice
+🕒 7:00 PM
+“Complete 2 Leetcode problems”
+
+* keep the display subtle, clean, and non-cluttered
+
+5. Tasks should NOT appear immediately if the start date is in the future.
+
+If:
+current date < task start date
+
+Then:
+
+* the task must appear inside a separate:
+  “Upcoming Tasks” section
+
+Requirements:
+
+* upcoming tasks must NOT appear inside the active tracker
+* upcoming tasks must NOT render active completion circles
+* upcoming tasks should automatically move into the main active tracker once:
+  current date >= task start date
+* no manual refresh or user action should be required
+* upcoming tasks must be visually separated
+* upcoming tasks should display:
+
+  * title
+  * start date
+  * optional end date
+  * optional scheduled time
+* keep the existing pastel SaaS aesthetic
+
+When the current date reaches the task start date:
+
+* automatically move the task into the active tracker
+* no manual refresh
+* no reload button
+* no user action required
+
+Requirements:
+
+* use reactive date-based filtering
+* transition should feel seamless
+* preserve:
+
+  * ordering
+  * subtasks
+  * progress state
+  * analytics state
+  * scheduled task time
+  * optional reminder/note text
+
+Only active tasks should appear in the main tracker.
+
+A task becomes ACTIVE when:
+current date >= start date
+
+A task remains visible in the active tracker while:
+
+* it still belongs to the currently visible tracker timeline/date range
+
+Even if:
+current date > end date
+
+However:
+
+* expired tasks must become read-only
+* expired tasks must no longer affect:
+
+  * streaks
+  * analytics
+  * dashboard metrics
+  * active progress calculations
+
+Requirements:
+
+* active tasks always appear before upcoming or expired tasks
+* preserve user ordering
+* keep tracker responsive and lightweight
+
+When:
+current date > end date
+
+Then:
+
+* DO NOT instantly remove the task from the tracker
+* disable future completion interaction
+* visually fade or distinguish expired cells/tasks subtly
+* keep the task visible temporarily while it still belongs to the currently visible tracker timeline/date range
+
+Expired tasks should:
+
+* stop affecting:
+
+  * analytics
+  * streaks
+  * dashboard metrics
+  * active progress
+
+* automatically archive or hide only AFTER they naturally move outside the visible tracker timeline/date range
+
+For date-based tasks:
+
+DO NOT render locked circles before the task start date.
+
+DO NOT:
+
+* render locked circles
+* render disabled circles
+* render placeholder completion states
+
+Instead:
+
+* completely hide all pre-start-date cells
+* visually make the task begin from its actual start date
+
+Example:
+
+BAD:
+🔒 🔒 🔒 ○ ○ ○
+
+GOOD:
+○ ○ ○
+
+Requirements:
+
+* hide all pre-start-date completion cells
+* only render completion circles during the task active range
+* maintain clean spacing and alignment
+* prevent clutter
+* also hide the post-end-date completion cells
+
+For dates after task expiration:
+
+* hide or fade completion cells
+* disable interaction
+
+Tracker timeline should behave dynamically.
+
+Instead of rigid weekly-only rendering:
+
+* allow continuous date rendering
+* dynamically display dates relative to current visible range
+* smoothly continue task visibility across dates
+
+Requirements:
+
+* maintain usability on:
+
+  * desktop
+  * tablet
+  * mobile
+* avoid horizontal layout breakage
+* maintain clean scrolling behavior
+
+Preserve the existing subtask system.
+
+Requirements:
+
+* subtasks inherit parent task lifecycle
+* subtasks only appear when parent task becomes active
+* subtasks should support:
+
+  * independent completion
+  * numbering
+  * nested rendering
+* preserve current UI style
+
+Preserve and improve the current onboarding UX.
+
+Requirements:
+
+* new users start with ZERO tasks
+* no automatic sample task seeding
+
+Empty state must show:
+
+* “No tasks yet”
+* “Create your first task”
+* “Load Sample Tasks”
+
+Preserve and improve sample/demo tasks.
+
+Requirements:
+
+* sample tasks must be clearly distinguished
+* sample tasks should support:
+
+  * start dates
+  * end dates
+  * subtasks
+  * scheduling
+* allow:
+
+  * “Clear Sample Tasks”
+  * restoring empty onboarding state
+
+Requirements:
+
+* clearing sample tasks should:
+
+  * remove ONLY sample tasks
+  * preserve real user-created tasks
+
+Preserve the already working delete-all functionality.
+
+Requirements:
+
+* keep delete-all functionality stable and compatible with the new date lifecycle system
+* preserve:
+
+  * confirmation modal
+  * loading state
+  * instant UI updates
+  * current user-only deletion behavior
+
+Do NOT unnecessarily rewrite already working delete-all logic.
+
+Preserve current auth flow and existing working validation system.
+
+Requirements:
+
+* preserve:
+
+  * email validation
+  * duplicate-account prevention
+  * login/signup validation
+  * JWT auth structure
+
+Do NOT unnecessarily rewrite already working authentication validation logic.
+
+Do NOT implement full email verification yet.
+
+Preserve the existing logout confirmation modal.
+
+Requirements:
+
+* keep logout confirmation working consistently on:
+
+  * desktop
+  * tablet
+  * mobile
+
+Allow users to customize task ordering.
+
+Requirements:
+
+* active tasks preserve user-defined order
+* upcoming tasks preserve user-defined order
+* drag-and-drop support is preferred
+* if drag-and-drop becomes unstable on mobile:
+
+  * provide move up/down ordering controls
+
+Do NOT rebuild the tracker UI.
+
+Fully optimize for:
+
+* desktop/laptop
+* tablet
+* mobile
+
+Requirements:
+
+* responsive spacing
+* responsive typography
+* responsive tracker grids
+* prevent overflow
+* prevent layout jumps
+* maintain touch usability on mobile
+
+Keep the existing:
+
+* pastel premium SaaS aesthetic
+* clean minimal UI
+* soft shadows
+* modern spacing
+
+Remove:
+
+* leftover template branding
+* floating badges
+* unnecessary animations
+* bouncing labels
+* distracting motion
+
+Avoid:
+
+* excessive animations
+* layout shifting
+* unnecessary rerenders
+
+Keep implementation lightweight.
+
+Requirements:
+
+* avoid unnecessary rerenders
+* avoid full page reloads
+* avoid rebuilding major architecture
+* preserve existing APIs whenever possible
+
+Do NOT:
+
+* rebuild the project
+* rewrite the architecture
+* migrate frameworks
+* replace the backend stack
+
+ONLY:
+
+* extend
+* refine
+* improve
+* stabilize
+  the current implementation.
+
+All new functionality must integrate into the existing codebase cleanly and consistently.

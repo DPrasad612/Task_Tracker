@@ -14,6 +14,10 @@ export const tasksTable = pgTable("tasks", {
   order: integer("order").notNull().default(0),
   parentId: uuid("parent_id"),
   isSample: boolean("is_sample").notNull().default(false),
+  startDate: text("start_date"),
+  endDate: text("end_date"),
+  scheduledTime: text("scheduled_time"),
+  scheduledNote: text("scheduled_note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
