@@ -16,14 +16,13 @@ import {
   ArrowUp,
   ArrowDown,
   Search,
-  Filter,
-  Download,
   CheckCircle2,
   Lock,
   Loader2,
   X,
   FileSpreadsheet,
-  AlertCircle
+  AlertCircle,
+  Wand2
 } from "lucide-react";
 
 export default function TrackerPage() {
@@ -45,6 +44,8 @@ export default function TrackerPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTaskForEdit, setActiveTaskForEdit] = useState<TaskWithDetails | null>(null);
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [isSeedingTasks, setIsSeedingTasks] = useState(false);
 
   const [taskName, setTaskName] = useState("");
   const [taskCategory, setTaskCategory] = useState("General");
@@ -301,6 +302,38 @@ export default function TrackerPage() {
       }
     } catch {
       showToast("Error deleting task", "error");
+    }
+  };
+
+  const handleDeleteAllTasks = async () => {
+    try {
+      const res = await fetch("/api/tasks/all", { method: "DELETE", credentials: "include" });
+      if (res.ok) {
+        setTasks([]);
+        setIsDeleteAllModalOpen(false);
+        showToast("All tasks deleted", "success");
+      } else {
+        showToast("Failed to delete all tasks", "error");
+      }
+    } catch {
+      showToast("Error deleting tasks", "error");
+    }
+  };
+
+  const handleLoadSampleTasks = async () => {
+    setIsSeedingTasks(true);
+    try {
+      const res = await fetch("/api/tasks/seed", { method: "POST", credentials: "include" });
+      if (res.ok) {
+        showToast("Sample tasks loaded!", "success");
+        fetchTasks();
+      } else {
+        showToast("Failed to load sample tasks", "error");
+      }
+    } catch {
+      showToast("Error loading sample tasks", "error");
+    } finally {
+      setIsSeedingTasks(false);
     }
   };
 
@@ -714,6 +747,16 @@ export default function TrackerPage() {
             <span className="hidden sm:inline">Export CSV</span>
           </button>
 
+          {tasks.length > 0 && (
+            <button
+              onClick={() => setIsDeleteAllModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold border border-red-200 dark:border-red-950 text-red-500 bg-bg-muted rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Delete All</span>
+            </button>
+          )}
+
           <button
             onClick={() => triggerAddModal(null)}
             className="flex items-center gap-2 px-4 py-2 bg-btn-primary text-text-primary rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-md cursor-pointer"
@@ -749,17 +792,31 @@ export default function TrackerPage() {
             <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
           </div>
         ) : filteredTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 gap-4">
-            <div className="w-16 h-16 bg-bg-muted rounded-full flex items-center justify-center border border-border-base">
-              <Sparkles className="w-8 h-8 text-indigo-400" />
+          <div className="flex flex-col items-center justify-center py-20 gap-6 px-6">
+            <div className="w-20 h-20 bg-bg-muted rounded-full flex items-center justify-center border border-border-base">
+              <Sparkles className="w-10 h-10 text-indigo-400" />
             </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-text-base">No tasks yet</p>
-              <p className="text-sm text-text-muted">Click "Add Task" to get started.</p>
+            <div className="text-center flex flex-col gap-1.5">
+              <p className="text-xl font-black text-text-base">No tasks yet</p>
+              <p className="text-sm text-text-muted font-medium">Create your first task to start tracking your weekly habits.</p>
             </div>
-            <button onClick={() => triggerAddModal(null)} className="px-6 py-2.5 bg-btn-primary text-text-primary rounded-xl text-sm font-bold hover:opacity-90 cursor-pointer">
-              Add Your First Task
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => triggerAddModal(null)}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-btn-primary text-text-primary rounded-xl text-sm font-bold hover:opacity-90 cursor-pointer shadow-md"
+              >
+                <Plus className="w-4 h-4" />
+                Create your first task
+              </button>
+              <button
+                onClick={handleLoadSampleTasks}
+                disabled={isSeedingTasks}
+                className="flex items-center justify-center gap-2 px-6 py-3 border border-border-base bg-bg-card text-text-muted rounded-xl text-sm font-bold hover:bg-bg-muted hover:text-text-base transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Wand2 className="w-4 h-4" />
+                {isSeedingTasks ? "Loading..." : "Load Sample Tasks"}
+              </button>
+            </div>
           </div>
         ) : (
           <table className="w-full border-collapse">
@@ -905,6 +962,52 @@ export default function TrackerPage() {
                   <button type="submit" className="flex-1 py-2.5 bg-btn-primary text-text-primary rounded-xl text-sm font-bold hover:opacity-90 cursor-pointer">Save</button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete All Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteAllModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={(e) => e.target === e.currentTarget && setIsDeleteAllModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-bg-card border border-border-base rounded-3xl p-8 w-full max-w-sm shadow-2xl"
+            >
+              <div className="flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-950 flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-text-base">Delete all tasks?</h3>
+                  <p className="text-sm text-text-muted mt-1">
+                    This will permanently delete all your tasks, subtasks, and their progress history. This action cannot be undone.
+                  </p>
+                </div>
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={() => setIsDeleteAllModalOpen(false)}
+                    className="flex-1 py-2.5 border border-border-base rounded-xl text-sm font-bold text-text-muted hover:bg-bg-muted cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteAllTasks}
+                    className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 cursor-pointer transition-colors"
+                  >
+                    Delete All
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
