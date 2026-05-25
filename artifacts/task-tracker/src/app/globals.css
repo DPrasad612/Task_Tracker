@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafaf9; /* Cream/sand tint */
+  --foreground: #1c1917; /* Dark charcoal */
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --border: #e7e5e4; /* Stoneware gray */
+  
+  --primary: #0f172a; /* Dark navy */
+  --primary-foreground: #ffffff;
+  
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1917;
+
+  /* Premium Pastels for Tasks & Categories */
+  --color-pastel-blue: #e0f2fe;
+  --color-pastel-green: #dcfce7;
+  --color-pastel-yellow: #fef9c3;
+  --color-pastel-red: #fee2e2;
+  --color-pastel-purple: #f3e8ff;
+  --color-pastel-orange: #ffedd5;
+  --color-pastel-pink: #fce7f3;
+  
+  /* Solid pastel text/border highlights */
+  --color-pastel-blue-dark: #0369a1;
+  --color-pastel-green-dark: #15803d;
+  --color-pastel-yellow-dark: #a16207;
+  --color-pastel-red-dark: #b91c1c;
+  --color-pastel-purple-dark: #7e22ce;
+  --color-pastel-orange-dark: #c2410c;
+  --color-pastel-pink-dark: #be185d;
+}
+
+.dark {
+  --background: #0c0a09; /* Deep charcoal */
+  --foreground: #f5f5f4; /* Warm white */
+  --card: #1c1917; /* Dark stone */
+  --card-foreground: #f5f5f4;
+  --border: #2e2a28;
+  
+  --primary: #f5f5f4;
+  --primary-foreground: #0c0a09;
+  
+  --muted: #221f1e;
+  --muted-foreground: #a8a29e;
+  
+  --accent: #221f1e;
+  --accent-foreground: #f5f5f4;
+
+  /* Pastel dark mode equivalents */
+  --color-pastel-blue: #082f49;
+  --color-pastel-green: #052e16;
+  --color-pastel-yellow: #451a03;
+  --color-pastel-red: #450a0a;
+  --color-pastel-purple: #3b0764;
+  --color-pastel-orange: #431407;
+  --color-pastel-pink: #500724;
+
+  --color-pastel-blue-dark: #38bdf8;
+  --color-pastel-green-dark: #4ade80;
+  --color-pastel-yellow-dark: #facc15;
+  --color-pastel-red-dark: #f87171;
+  --color-pastel-purple-dark: #c084fc;
+  --color-pastel-orange-dark: #fb923c;
+  --color-pastel-pink-dark: #f472b6;
+}
+
+@theme {
+  --color-bg-base: var(--background);
+  --color-text-base: var(--foreground);
+  --color-bg-card: var(--card);
+  --color-text-card: var(--card-foreground);
+  --color-border-base: var(--border);
+  --color-btn-primary: var(--primary);
+  --color-text-primary: var(--primary-foreground);
+  --color-bg-muted: var(--muted);
+  --color-text-muted: var(--muted-foreground);
+  
+  --animate-checkbox: checkboxSpring 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes checkboxSpring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  min-height: 100vh;
+}
+
+/* Premium Notebook Graph Grid Background */
+.bg-grid-pattern {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(120, 113, 108, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(120, 113, 108, 0.05) 1px, transparent 1px);
+}
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(168, 162, 158, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(168, 162, 158, 0.03) 1px, transparent 1px);
+}
+
+/* Hide scrollbars but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Styled scrollbars for task table horizontal scrolling */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
