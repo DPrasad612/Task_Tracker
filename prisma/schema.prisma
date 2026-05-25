@@ -1,0 +1,56 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime      @default(now())
+  preferences  Preference?
+  tasks        Task[]
+  progressLogs ProgressLog[]
+}
+
+model Preference {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme     String  @default("light") // "light" | "dark"
+  workWeek  String  @default("mon-sun") // Preferred week start
+}
+
+model Task {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  category     String        @default("General")
+  color        String        @default("#3B82F6") // Hex pastel color
+  icon         String        @default("Check")   // Lucide icon name
+  priority     String        @default("medium")  // "low" | "medium" | "high"
+  order        Int           @default(0)         // For drag-and-drop reordering
+  parentId     String?       // Self-relation for infinite subtasks
+  parent       Task?         @relation("SubTasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks     Task[]        @relation("SubTasks")
+  createdAt    DateTime      @default(now())
+  progressLogs ProgressLog[]
+}
+
+model ProgressLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  date      String   // ISO date string in YYYY-MM-DD format
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([taskId, date])
+}
