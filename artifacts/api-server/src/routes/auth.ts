@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { db, usersTable, preferencesTable, tasksTable, progressLogsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, usersTable, preferencesTable, tasksTable, progressLogsTable, passwordResetTokensTable } from "@workspace/db";
+import { eq, and, gt, isNull } from "drizzle-orm";
 import { hashPassword, comparePassword, signToken, verifyToken } from "../lib/auth";
 import { formatDate } from "../lib/utils";
 import { logger } from "../lib/logger";
+import crypto from "node:crypto";
 
 const router = Router();
 
@@ -167,6 +168,106 @@ router.get("/auth/me", async (req, res): Promise<void> => {
   } catch (error) {
     req.log.error({ error }, "Session check error");
     res.status(500).json({ error: "Internal server error checking session" });
+  }
+});
+
+router.post("/auth/forgot-password", async (req, res): Promise<void> => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ error: "Email address is required" });
+      return;
+    }
+    const normalizedEmail = email.toLowerCase().trim();
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.email, normalizedEmail));
+
+    if (!user) {
+      res.json({ message: "If that email is registered, a reset link has been generated." });
+      return;
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await db.insert(passwordResetTokensTable).values({ userId: user.id, token, expiresAt });
+
+    const baseUrl = process.env["REPLIT_DEV_DOMAIN"]
+      ? `https://${process.env["REPLIT_DEV_DOMAIN"]}`
+      : `http://localhost:${process.env["PORT"] ?? 8080}`;
+
+    const resetLink = `${baseUrl}/reset-password?token=${token}`;
+
+    res.json({ message: "Reset link generated.", resetLink });
+  } catch (error) {
+    req.log.error({ error }, "Forgot password error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/auth/reset-password/validate", async (req, res): Promise<void> => {
+  try {
+    const { token } = req.query as { token?: string };
+    if (!token) {
+      res.status(400).json({ error: "Token is required" });
+      return;
+    }
+    const [row] = await db
+      .select()
+      .from(passwordResetTokensTable)
+      .where(
+        and(
+          eq(passwordResetTokensTable.token, token),
+          gt(passwordResetTokensTable.expiresAt, new Date()),
+          isNull(passwordResetTokensTable.usedAt),
+        ),
+      );
+    if (!row) {
+      res.status(404).json({ error: "Invalid or expired token" });
+      return;
+    }
+    res.json({ valid: true });
+  } catch (error) {
+    req.log.error({ error }, "Token validation error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/auth/reset-password", async (req, res): Promise<void> => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      res.status(400).json({ error: "Token and password are required" });
+      return;
+    }
+    if (password.length < 8) {
+      res.status(400).json({ error: "Password must be at least 8 characters" });
+      return;
+    }
+    const [row] = await db
+      .select()
+      .from(passwordResetTokensTable)
+      .where(
+        and(
+          eq(passwordResetTokensTable.token, token),
+          gt(passwordResetTokensTable.expiresAt, new Date()),
+          isNull(passwordResetTokensTable.usedAt),
+        ),
+      );
+    if (!row) {
+      res.status(400).json({ error: "Invalid or expired reset link. Please request a new one." });
+      return;
+    }
+
+    const passwordHash = await hashPassword(password);
+    await db.update(usersTable).set({ passwordHash }).where(eq(usersTable.id, row.userId));
+    await db.update(passwordResetTokensTable)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokensTable.id, row.id));
+
+    res.json({ success: true, message: "Password updated successfully." });
+  } catch (error) {
+    req.log.error({ error }, "Reset password error");
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

@@ -123,6 +123,15 @@ export default function LoginPage() {
               {submitting ? "Signing In..." : "Sign In"}
               <LogIn className="w-4 h-4" />
             </button>
+
+            <div className="text-center">
+              <Link
+                href="/forgot-password"
+                className="text-xs text-text-muted hover:text-indigo-500 font-semibold transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </form>
 
           <div className="text-center text-xs text-text-muted font-medium border-t border-border-base pt-6">

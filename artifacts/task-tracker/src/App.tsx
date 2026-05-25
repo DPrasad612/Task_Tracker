@@ -6,6 +6,8 @@ import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import TrackerPage from "@/pages/TrackerPage";
 import DashboardPage from "@/pages/DashboardPage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +22,8 @@ function Router() {
             <Route path="/signup" component={SignupPage} />
             <Route path="/tracker" component={TrackerPage} />
             <Route path="/dashboard" component={DashboardPage} />
+            <Route path="/forgot-password" component={ForgotPasswordPage} />
+            <Route path="/reset-password" component={ResetPasswordPage} />
             <Route component={NotFound} />
           </Switch>
         </main>
