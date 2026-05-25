@@ -82,8 +82,25 @@ export default function SignupPage() {
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-950 text-red-600 dark:text-red-400 rounded-2xl text-xs font-bold">
-              {error}
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-950 text-red-600 dark:text-red-400 rounded-2xl text-xs font-bold flex flex-col gap-1.5">
+              <span>{error}</span>
+              {error.toLowerCase().includes("already exists") && (
+                <span className="font-normal text-text-muted">
+                  Already have an account?{" "}
+                  <Link href="/login" className="text-indigo-500 hover:underline font-bold">
+                    Sign in instead →
+                  </Link>
+                </span>
+              )}
+              {error.toLowerCase().includes("unable to connect") && (
+                <span className="font-normal text-text-muted">
+                  If this keeps happening, your account may have been created — try{" "}
+                  <Link href="/login" className="text-indigo-500 hover:underline font-bold">
+                    signing in
+                  </Link>{" "}
+                  with the same email and password.
+                </span>
+              )}
             </div>
           )}
 

@@ -68,15 +68,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         credentials: "include",
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
+      let data: any = {};
+      try { data = await res.json(); } catch { /* non-JSON body */ }
       if (res.ok) {
         setUser(data.user);
         setLocation("/tracker");
         return { success: true };
       }
-      return { success: false, error: data.error || "Login failed" };
+      return { success: false, error: data.error || "Login failed. Please check your credentials." };
     } catch {
-      return { success: false, error: "An unexpected error occurred" };
+      return { success: false, error: "Unable to connect. Please check your connection and try again." };
     }
   };
 
@@ -88,15 +89,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         credentials: "include",
         body: JSON.stringify({ name, email, password }),
       });
-      const data = await res.json();
+      let data: any = {};
+      try { data = await res.json(); } catch { /* non-JSON body */ }
       if (res.ok) {
         setUser(data.user);
         setLocation("/tracker");
         return { success: true };
       }
-      return { success: false, error: data.error || "Signup failed" };
+      return { success: false, error: data.error || "Failed to create account. Please try again." };
     } catch {
-      return { success: false, error: "An unexpected error occurred" };
+      return { success: false, error: "Unable to connect. Please check your connection and try again." };
     }
   };
 
