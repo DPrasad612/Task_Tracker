@@ -25,6 +25,8 @@ export interface Task {
   order: number;
   parentId: string | null;
   isSample: boolean;
+  isWeekBased: boolean;
+  weekDays: string | null;
   startDate: string | null;
   endDate: string | null;
   scheduledTime: string | null;

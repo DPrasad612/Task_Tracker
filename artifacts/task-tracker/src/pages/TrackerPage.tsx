@@ -25,6 +25,7 @@ import {
   Clock,
   CalendarRange,
   Timer,
+  Repeat2,
 } from "lucide-react";
 
 const formatTime = (t: string) => {
@@ -37,6 +38,32 @@ const formatTime = (t: string) => {
 const formatDisplayDate = (dateStr: string) => {
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+
+const WEEKDAY_OPTIONS = [
+  { key: "mon", label: "Mon" },
+  { key: "tue", label: "Tue" },
+  { key: "wed", label: "Wed" },
+  { key: "thu", label: "Thu" },
+  { key: "fri", label: "Fri" },
+  { key: "sat", label: "Sat" },
+  { key: "sun", label: "Sun" },
+];
+
+const getDayKey = (dateStr: string): string =>
+  WEEKDAY_KEYS[new Date(dateStr + "T12:00:00").getDay()];
+
+const getWeekMonday = (dateStr: string): string => {
+  const d = new Date(dateStr + "T12:00:00");
+  const day = d.getDay();
+  d.setDate(d.getDate() - ((day + 6) % 7));
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
 };
 
 export default function TrackerPage() {
@@ -70,6 +97,8 @@ export default function TrackerPage() {
   const [taskParentId, setTaskParentId] = useState<string | null>(null);
   const [taskStartDate, setTaskStartDate] = useState("");
   const [taskEndDate, setTaskEndDate] = useState("");
+  const [isWeekBased, setIsWeekBased] = useState(false);
+  const [taskWeekDays, setTaskWeekDays] = useState<string[]>([]);
   const [isTimeEnabled, setIsTimeEnabled] = useState(false);
   const [taskScheduledTime, setTaskScheduledTime] = useState("");
   const [taskScheduledNote, setTaskScheduledNote] = useState("");
@@ -237,6 +266,8 @@ export default function TrackerPage() {
     setTaskPriority("medium");
     setTaskStartDate(currentLocalDateStr);
     setTaskEndDate("");
+    setIsWeekBased(false);
+    setTaskWeekDays([]);
     setIsTimeEnabled(false);
     setTaskScheduledTime("");
     setTaskScheduledNote("");
@@ -259,6 +290,8 @@ export default function TrackerPage() {
           parentId: taskParentId,
           startDate: taskParentId ? null : (taskStartDate || currentLocalDateStr),
           endDate: taskParentId ? null : (taskEndDate || null),
+          isWeekBased: taskParentId ? false : isWeekBased,
+          weekDays: (!taskParentId && isWeekBased && taskWeekDays.length > 0) ? taskWeekDays.join(",") : null,
           scheduledTime: (!taskParentId && isTimeEnabled && taskScheduledTime) ? taskScheduledTime : null,
           scheduledNote: (!taskParentId && isTimeEnabled && taskScheduledNote.trim()) ? taskScheduledNote.trim() : null,
         }),
@@ -295,6 +328,8 @@ export default function TrackerPage() {
           priority: taskPriority,
           startDate: activeTaskForEdit.parentId ? undefined : (taskStartDate || null),
           endDate: activeTaskForEdit.parentId ? undefined : (taskEndDate || null),
+          isWeekBased: activeTaskForEdit.parentId ? undefined : isWeekBased,
+          weekDays: activeTaskForEdit.parentId ? undefined : (isWeekBased && taskWeekDays.length > 0 ? taskWeekDays.join(",") : null),
           scheduledTime: activeTaskForEdit.parentId ? undefined : (isTimeEnabled && taskScheduledTime ? taskScheduledTime : null),
           scheduledNote: activeTaskForEdit.parentId ? undefined : (isTimeEnabled && taskScheduledNote.trim() ? taskScheduledNote.trim() : null),
         }),
@@ -514,6 +549,8 @@ export default function TrackerPage() {
     setTaskPriority(task.priority);
     setTaskStartDate(task.startDate || "");
     setTaskEndDate(task.endDate || "");
+    setIsWeekBased(task.isWeekBased || false);
+    setTaskWeekDays(task.weekDays ? task.weekDays.split(",") : []);
     const hasTime = !!task.scheduledTime;
     setIsTimeEnabled(hasTime);
     setTaskScheduledTime(task.scheduledTime || "");
@@ -525,10 +562,12 @@ export default function TrackerPage() {
     const weekDates = getWeekDates(pivotDate);
     const taskSD = effectiveStartDate !== undefined ? effectiveStartDate : task.startDate;
     const taskED = effectiveEndDate !== undefined ? effectiveEndDate : task.endDate;
+    const selectedDays = (task.isWeekBased && task.weekDays) ? task.weekDays.split(",") : null;
 
     const activeDates = weekDates.filter((d) => {
       if (taskSD && d.dateStr < taskSD) return false;
       if (taskED && d.dateStr > taskED) return false;
+      if (selectedDays && !selectedDays.includes(getDayKey(d.dateStr))) return false;
       return true;
     });
 
@@ -541,19 +580,29 @@ export default function TrackerPage() {
       : 0;
 
     let currentStreak = 0;
-    const sortedCompletedDates = task.progressLogs
-      .filter((l) => l.completed)
-      .map((l) => l.date)
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    const completedSet = new Set(task.progressLogs.filter((l) => l.completed).map((l) => l.date));
+    const sortedCompletedDates = [...completedSet].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
     if (sortedCompletedDates.length > 0) {
-      const yesterday = formatDate(new Date(Date.now() - 86400000));
+      const yesterday = formatDate(new Date(new Date(currentLocalDateStr + "T12:00:00").getTime() - 86400000));
       const firstDate = sortedCompletedDates[0];
       if (firstDate === currentLocalDateStr || firstDate === yesterday) {
-        let current = new Date(firstDate);
-        for (const date of sortedCompletedDates) {
-          if (formatDate(current) === date) { currentStreak++; current.setDate(current.getDate() - 1); }
-          else break;
+        if (selectedDays) {
+          let cursor = new Date(firstDate + "T12:00:00");
+          let guard = 0;
+          while (guard++ < 400) {
+            const ds = formatDate(cursor);
+            const dk = getDayKey(ds);
+            if (!selectedDays.includes(dk)) { cursor.setDate(cursor.getDate() - 1); continue; }
+            if (completedSet.has(ds)) { currentStreak++; cursor.setDate(cursor.getDate() - 1); }
+            else break;
+          }
+        } else {
+          let current = new Date(firstDate + "T12:00:00");
+          for (const date of sortedCompletedDates) {
+            if (formatDate(current) === date) { currentStreak++; current.setDate(current.getDate() - 1); }
+            else break;
+          }
         }
       }
     }
@@ -606,8 +655,16 @@ export default function TrackerPage() {
 
   const filteredTasks = filterTaskTree(tasks);
 
-  const activeTasks = filteredTasks.filter((t) => !t.startDate || t.startDate <= currentLocalDateStr);
-  const upcomingTasks = filteredTasks.filter((t) => t.startDate && t.startDate > currentLocalDateStr);
+  const activeTasks = filteredTasks.filter((t) => {
+    if (!t.startDate) return true;
+    if (t.isWeekBased) return getWeekMonday(t.startDate) <= currentLocalDateStr;
+    return t.startDate <= currentLocalDateStr;
+  });
+  const upcomingTasks = filteredTasks.filter((t) => {
+    if (!t.startDate) return false;
+    if (t.isWeekBased) return getWeekMonday(t.startDate) > currentLocalDateStr;
+    return t.startDate > currentLocalDateStr;
+  });
 
   const hasSampleTasks = tasks.some(function checkSample(t: TaskWithDetails): boolean {
     return t.isSample || t.subtasks.some(checkSample);
@@ -671,6 +728,11 @@ export default function TrackerPage() {
                       sample
                     </span>
                   )}
+                  {task.isWeekBased && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-800 flex-shrink-0 flex items-center gap-0.5">
+                      <Repeat2 className="w-2.5 h-2.5" /> weekly
+                    </span>
+                  )}
                   {isExpired && (
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800/50 text-gray-400 border border-gray-200 dark:border-gray-700 flex-shrink-0">
                       expired
@@ -706,6 +768,13 @@ export default function TrackerPage() {
 
             if (beforeStart) {
               return <td key={d.dateStr} className="py-4 text-center min-w-[52px]"><div className="w-8 h-8 mx-auto" /></td>;
+            }
+
+            if (task.isWeekBased && task.weekDays) {
+              const selDays = task.weekDays.split(",");
+              if (!selDays.includes(getDayKey(d.dateStr))) {
+                return <td key={d.dateStr} className="py-4 text-center min-w-[52px]"><div className="w-8 h-8 mx-auto" /></td>;
+              }
             }
 
             if (afterEnd) {
@@ -1173,6 +1242,57 @@ export default function TrackerPage() {
 
                     <div className="flex items-center justify-between p-3 bg-bg-muted rounded-xl border border-border-base">
                       <div className="flex items-center gap-2">
+                        <Repeat2 className="w-4 h-4 text-text-muted" />
+                        <div>
+                          <span className="text-sm font-bold text-text-base">Week Based Task</span>
+                          <p className="text-[10px] text-text-muted font-medium">Only selected weekdays get circles</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setIsWeekBased((v) => !v); setTaskWeekDays([]); }}
+                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0 ${isWeekBased ? "bg-btn-primary" : "bg-border-base"}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isWeekBased ? "translate-x-6" : "translate-x-1"}`} />
+                      </button>
+                    </div>
+
+                    {isWeekBased && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex flex-col gap-2"
+                      >
+                        <label className="text-xs font-bold text-text-muted uppercase flex items-center gap-1.5">
+                          <Repeat2 className="w-3 h-3" /> Active Weekdays
+                        </label>
+                        <div className="flex gap-1">
+                          {WEEKDAY_OPTIONS.map(({ key, label }) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => setTaskWeekDays((prev) =>
+                                prev.includes(key) ? prev.filter((d) => d !== key) : [...prev, key]
+                              )}
+                              className={`flex-1 py-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer border ${
+                                taskWeekDays.includes(key)
+                                  ? "bg-btn-primary text-text-primary border-btn-primary shadow-sm"
+                                  : "bg-bg-muted text-text-muted border-border-base hover:bg-bg-card"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                        {taskWeekDays.length === 0 && (
+                          <p className="text-[11px] text-amber-500 font-semibold">Select at least one weekday to save</p>
+                        )}
+                      </motion.div>
+                    )}
+
+                    <div className="flex items-center justify-between p-3 bg-bg-muted rounded-xl border border-border-base">
+                      <div className="flex items-center gap-2">
                         <Timer className="w-4 h-4 text-text-muted" />
                         <span className="text-sm font-bold text-text-base">Enable time-based task</span>
                       </div>
@@ -1300,6 +1420,57 @@ export default function TrackerPage() {
                         />
                       </div>
                     </div>
+
+                    <div className="flex items-center justify-between p-3 bg-bg-muted rounded-xl border border-border-base">
+                      <div className="flex items-center gap-2">
+                        <Repeat2 className="w-4 h-4 text-text-muted" />
+                        <div>
+                          <span className="text-sm font-bold text-text-base">Week Based Task</span>
+                          <p className="text-[10px] text-text-muted font-medium">Only selected weekdays get circles</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setIsWeekBased((v) => !v); setTaskWeekDays([]); }}
+                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0 ${isWeekBased ? "bg-btn-primary" : "bg-border-base"}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isWeekBased ? "translate-x-6" : "translate-x-1"}`} />
+                      </button>
+                    </div>
+
+                    {isWeekBased && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex flex-col gap-2"
+                      >
+                        <label className="text-xs font-bold text-text-muted uppercase flex items-center gap-1.5">
+                          <Repeat2 className="w-3 h-3" /> Active Weekdays
+                        </label>
+                        <div className="flex gap-1">
+                          {WEEKDAY_OPTIONS.map(({ key, label }) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => setTaskWeekDays((prev) =>
+                                prev.includes(key) ? prev.filter((d) => d !== key) : [...prev, key]
+                              )}
+                              className={`flex-1 py-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer border ${
+                                taskWeekDays.includes(key)
+                                  ? "bg-btn-primary text-text-primary border-btn-primary shadow-sm"
+                                  : "bg-bg-muted text-text-muted border-border-base hover:bg-bg-card"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                        {taskWeekDays.length === 0 && (
+                          <p className="text-[11px] text-amber-500 font-semibold">Select at least one weekday to save</p>
+                        )}
+                      </motion.div>
+                    )}
 
                     <div className="flex items-center justify-between p-3 bg-bg-muted rounded-xl border border-border-base">
                       <div className="flex items-center gap-2">

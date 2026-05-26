@@ -69,7 +69,7 @@ router.post("/tasks", async (req, res): Promise<void> => {
       return;
     }
 
-    const { name, category, color, icon, priority, parentId, startDate, endDate, scheduledTime, scheduledNote } = req.body;
+    const { name, category, color, icon, priority, parentId, startDate, endDate, scheduledTime, scheduledNote, isWeekBased, weekDays } = req.body;
 
     if (!name) {
       res.status(400).json({ error: "Task name is required" });
@@ -96,6 +96,8 @@ router.post("/tasks", async (req, res): Promise<void> => {
       parentId: parentId || null,
       isSample: false,
       order: existingTasks.length,
+      isWeekBased: isWeekBased === true,
+      weekDays: (isWeekBased === true && weekDays) ? weekDays : null,
       startDate: startDate || null,
       endDate: endDate || null,
       scheduledTime: scheduledTime || null,
@@ -118,7 +120,7 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
     }
 
     const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const { name, category, color, icon, priority, startDate, endDate, scheduledTime, scheduledNote } = req.body;
+    const { name, category, color, icon, priority, startDate, endDate, scheduledTime, scheduledNote, isWeekBased, weekDays } = req.body;
 
     const [existing] = await db
       .select()
@@ -130,6 +132,8 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
       return;
     }
 
+    const resolvedIsWeekBased = isWeekBased !== undefined ? isWeekBased === true : existing.isWeekBased;
+
     const [updated] = await db
       .update(tasksTable)
       .set({
@@ -138,6 +142,8 @@ router.put("/tasks/:id", async (req, res): Promise<void> => {
         color: color !== undefined ? color : existing.color,
         icon: icon !== undefined ? icon : existing.icon,
         priority: priority !== undefined ? priority : existing.priority,
+        isWeekBased: resolvedIsWeekBased,
+        weekDays: resolvedIsWeekBased ? (weekDays !== undefined ? (weekDays || null) : existing.weekDays) : null,
         startDate: startDate !== undefined ? (startDate || null) : existing.startDate,
         endDate: endDate !== undefined ? (endDate || null) : existing.endDate,
         scheduledTime: scheduledTime !== undefined ? (scheduledTime || null) : existing.scheduledTime,

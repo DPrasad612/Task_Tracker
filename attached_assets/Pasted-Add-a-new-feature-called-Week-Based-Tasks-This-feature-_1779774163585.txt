@@ -1,0 +1,86 @@
+Add a new feature called “Week Based Tasks”.
+
+This feature is different from normal date range tasks.
+
+Requirements:
+
+1. While creating a task, add a new optional mode:
+- Week Based Task
+
+2. If enabled:
+- User should be able to select:
+  - Start Date
+  - End Date
+  - Repeating weekdays
+    Example:
+    [✓] Monday
+    [ ] Tuesday
+    [✓] Wednesday
+    [ ] Thursday
+    [ ] Friday
+    [✓] Saturday
+    [ ] Sunday
+
+3. Week based tasks should:
+- Remain inside Active Tasks from the beginning week itself
+- Stay visible in Active Tasks until the highest selected end date is reached
+- Never move into Upcoming Tasks once the starting week begins
+
+4. The most important behavior:
+Only selected weekdays should contain active completion circles.
+
+Example:
+If only Monday, Wednesday, Saturday are selected:
+- Only those days should show clickable completion circles
+- Remaining weekdays should:
+  - not contain circles
+  - not contain locked states
+  - not contain disabled placeholders
+  - not affect progress calculation
+
+5. Progress calculation must only count selected weekdays.
+
+Example:
+If only 3 weekdays are selected in a week:
+- total possible progress for that week is based only on those 3 days
+- unselected days must not reduce completion percentage
+
+6. Week based tasks should still:
+- support categories
+- support priorities
+- support time-based notes
+- support streaks
+- support persistence after refresh
+
+7. Time based tasks:
+If the user enables “Time Based Task”:
+- Ask for task time
+- Show the selected time below the task name as a small note
+- Example:
+  Drink Water
+  ⏰ 7:30 AM
+
+8. UI behavior:
+- Keep the task row aligned properly even when some weekdays are hidden
+- Empty weekdays should remain visually clean
+- Do not show grey locked circles for unavailable weekdays
+
+9. Expiry behavior:
+- Once the final end date is passed:
+  - task should remain visible only till the currently displayed active tracker range
+  - it should not continue infinitely
+  - it should stop generating future active circles
+
+10. Existing features must remain fully working:
+- normal tasks
+- upcoming tasks
+- automatic transition into active tracker
+- forgot password flow
+- email validation
+- delete all
+- clear samples
+- export CSV
+- authentication
+
+11. Do not break existing task logic.
+Implement this feature cleanly with reusable logic and proper filtering for weekdays.
