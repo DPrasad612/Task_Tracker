@@ -893,7 +893,7 @@ export default function TrackerPage() {
   const monthYear = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(pivotDate);
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-bg-base overflow-hidden">
+    <div className="flex-1 flex flex-col min-h-screen bg-bg-base [overflow:clip]">
       {/* Toast */}
       <AnimatePresence>
         {notification && (
@@ -1011,7 +1011,7 @@ export default function TrackerPage() {
       </div>
 
       {/* Active Tracker Table */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto min-h-0">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="flex flex-col items-center gap-3">
