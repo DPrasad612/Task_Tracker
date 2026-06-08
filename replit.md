@@ -1,4 +1,4 @@
-# [Task Tracker]
+# Task Tracker
 
 
 A full-stack task management application that helps users create, organize, prioritize, and track tasks to improve productivity and workflow management.
