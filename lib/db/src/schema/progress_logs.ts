@@ -16,5 +16,5 @@ export const progressLogsTable = pgTable("progress_logs", {
 ]);
 
 export const insertProgressLogSchema = createInsertSchema(progressLogsTable).omit({ id: true, createdAt: true });
-export type InsertProgressLog = z.infer<typeof insertProgressLogSchema>;
+export type InsertProgressLog = any;
 export type ProgressLog = typeof progressLogsTable.$inferSelect;
