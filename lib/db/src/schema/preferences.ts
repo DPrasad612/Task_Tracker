@@ -11,5 +11,5 @@ export const preferencesTable = pgTable("preferences", {
 });
 
 export const insertPreferenceSchema = createInsertSchema(preferencesTable).omit({ id: true });
-export type InsertPreference = z.infer<typeof insertPreferenceSchema>;
+export type InsertPreference = any;
 export type Preference = typeof preferencesTable.$inferSelect;
