@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { formatDate } from "@/lib/utils";
+import { API_URL } from "@/lib/api";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from "recharts";
@@ -39,7 +40,7 @@ export default function DashboardPage() {
   const fetchAnalytics = async () => {
     if (!user) return;
     try {
-      const res = await fetch("/api/analytics", { credentials: "include" });
+      const res = await fetch(`${API_URL}/api/analytics`, { credentials: "include" });
       if (res.ok) {
         const result = await res.json();
         setData(result);
