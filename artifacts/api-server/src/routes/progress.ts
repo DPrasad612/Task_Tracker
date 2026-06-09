@@ -78,19 +78,19 @@ router.post("/progress", async (req, res): Promise<void> => {
       .where(eq(tasksTable.parentId, task.id));
 
     if (subtasks.length > 0) {
-      await upsertLog(user.id, taskId, date, completed);
+      await upsertLog(user!.id, taskId, date, completed);
 
       async function toggleSubtasksRecursive(parentId: string, state: boolean) {
         const children = await db.select().from(tasksTable).where(eq(tasksTable.parentId, parentId));
         for (const child of children) {
-          await upsertLog(user.id, child.id, date, state);
+          await upsertLog(user!.id, child.id, date, state);
           await toggleSubtasksRecursive(child.id, state);
         }
       }
 
       await toggleSubtasksRecursive(task.id, completed);
     } else {
-      await upsertLog(user.id, taskId, date, completed);
+      await upsertLog(user!.id, taskId, date, completed);
 
       let parentId = task.parentId;
       while (parentId) {
@@ -113,7 +113,7 @@ router.post("/progress", async (req, res): Promise<void> => {
         const completedSiblingCount = siblingLogs.filter((l) => siblingIds.includes(l.taskId)).length;
         const allCompleted = completedSiblingCount === siblings.length;
 
-        await upsertLog(user.id, parent.id, date, allCompleted);
+        await upsertLog(user!.id, parent.id, date, allCompleted);
         parentId = parent.parentId;
       }
     }
