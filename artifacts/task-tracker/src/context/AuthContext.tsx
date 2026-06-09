@@ -1,3 +1,4 @@
+import { API_URL } from "@/lib/api";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkSession = async () => {
     try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const res = await fetch(`${API_URL}/api/auth/me`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (name: string, email: string, password: string) => {
     try {
-      const res = await fetch("/api/auth/signup", {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -104,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      await fetch(`${API_URL}/api/auth/logout`, { method: "POST", credentials: "include" });
       setUser(null);
       document.documentElement.classList.remove("dark");
       setLocation("/");
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     setUser(updatedUser);
     try {
-      await fetch("/api/preferences", {
+      await fetch(`${API_URL}/api/preferences`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
