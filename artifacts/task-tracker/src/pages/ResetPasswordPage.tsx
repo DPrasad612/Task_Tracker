@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, KeyRound, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 export default function ResetPasswordPage() {
   const [location, setLocation] = useLocation();
@@ -21,7 +22,7 @@ export default function ResetPasswordPage() {
       setTokenValid(false);
       return;
     }
-    fetch(`/api/auth/reset-password/validate?token=${encodeURIComponent(token)}`, {
+    fetch(`${API_URL}/api/auth/reset-password/validate?token=${encodeURIComponent(token)}`, {
       credentials: "include",
     })
       .then(async (res) => {
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
