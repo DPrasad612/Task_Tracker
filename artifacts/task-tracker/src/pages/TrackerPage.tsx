@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { getWeekDates, formatDate } from "@/lib/utils";
+import { API_URL } from "@/lib/api";
 import { TaskWithDetails } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -133,7 +134,7 @@ export default function TrackerPage() {
     const startDate = weekDates[0].dateStr;
     const endDate = weekDates[6].dateStr;
     try {
-      const res = await fetch(`/api/tasks?startDate=${startDate}&endDate=${endDate}`, { credentials: "include" });
+      const res = await fetch(`${API_URL}/api/tasks?startDate=${startDate}&endDate=${endDate}`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setTasks(data.tasks || []);
@@ -241,7 +242,7 @@ export default function TrackerPage() {
     setTasks((prev) => updateLocalTree(prev));
 
     try {
-      const res = await fetch("/api/progress", {
+      const res = await fetch(`${API_URL}/api/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -278,7 +279,7 @@ export default function TrackerPage() {
     if (!taskName.trim()) return;
 
     try {
-      const res = await fetch("/api/tasks", {
+      const res = await fetch(`${API_URL}/api/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -317,7 +318,7 @@ export default function TrackerPage() {
     if (!activeTaskForEdit || !taskName.trim()) return;
 
     try {
-      const res = await fetch(`/api/tasks/${activeTaskForEdit.id}`, {
+      const res = await fetch(`${API_URL}/api/tasks/${activeTaskForEdit.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -351,7 +352,7 @@ export default function TrackerPage() {
   const handleDeleteTask = async (taskId: string) => {
     if (!confirm("Are you sure you want to delete this task? All subtasks will also be deleted.")) return;
     try {
-      const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`${API_URL}/api/tasks/${taskId}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         showToast("Task deleted", "success");
         fetchTasks();
@@ -367,7 +368,7 @@ export default function TrackerPage() {
     if (isDeleteAllLoading) return;
     setIsDeleteAllLoading(true);
     try {
-      const res = await fetch("/api/tasks/all", { method: "DELETE", credentials: "include" });
+      const res = await fetch(`${API_URL}/api/tasks/all`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         setTasks([]);
         setIsDeleteAllModalOpen(false);
@@ -386,7 +387,7 @@ export default function TrackerPage() {
     if (isClearingSampleTasks) return;
     setIsClearingSampleTasks(true);
     try {
-      const res = await fetch("/api/tasks/sample", { method: "DELETE", credentials: "include" });
+      const res = await fetch(`${API_URL}/api/tasks/sample`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         setTasks((prev) => {
           const removeSample = (list: TaskWithDetails[]): TaskWithDetails[] =>
@@ -408,7 +409,7 @@ export default function TrackerPage() {
     if (isSeedingTasks) return;
     setIsSeedingTasks(true);
     try {
-      const res = await fetch("/api/tasks/seed", { method: "POST", credentials: "include" });
+      const res = await fetch(`${API_URL}/api/tasks/seed`, { method: "POST", credentials: "include" });
       if (res.ok) {
         showToast("Sample tasks loaded!", "success");
         fetchTasks();
@@ -472,7 +473,7 @@ export default function TrackerPage() {
     }
 
     try {
-      const res = await fetch("/api/tasks/reorder", {
+      const res = await fetch(`${API_URL}/api/tasks/reorder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -502,7 +503,7 @@ export default function TrackerPage() {
     const orderedIds = updatedSiblings.map((t) => t.id);
 
     try {
-      const res = await fetch("/api/tasks/reorder", {
+      const res = await fetch(`${API_URL}/api/tasks/reorder`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
