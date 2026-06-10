@@ -41,14 +41,13 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       .where(eq(preferencesTable.userId, user.id));
 
     const token = signToken({ userId: user.id, email: user.email });
-
-    res.cookie("session", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7 * 1000,
-      path: "/",
-    });
+res.cookie("session", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 60 * 60 * 24 * 7 * 1000,
+  path: "/",
+});
 
     res.json({
       user: {
@@ -107,12 +106,12 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     const token = signToken({ userId: user.id, email: user.email });
 
     res.cookie("session", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7 * 1000,
-      path: "/",
-    });
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 60 * 60 * 24 * 7 * 1000,
+    path: "/",
+   });
 
     res.json({
       user: {
@@ -273,13 +272,13 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
 });
 
 router.post("/auth/logout", async (req, res): Promise<void> => {
-  res.cookie("session", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 0,
-    path: "/",
-  });
+  res.cookie("session", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 60 * 60 * 24 * 7 * 1000,
+  path: "/",
+});
   res.json({ success: true, message: "Logged out successfully" });
 });
 
